@@ -1,23 +1,55 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from "react";
+import Navbar from "./components/Navbar";
+import Banner from "./components/Banner";
+import Row from "./components/Row";
+import ProfileSelect from "./pages/ProfileSelect";
+import { movies } from "./utils/movies";
 
 function App() {
+  const [profile, setProfile] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  if (!profile) {
+    return <ProfileSelect onSelect={setProfile} />;
+  }
+
+  const genres = ["Action", "Drama", "Kids", "Thriller"];
+  const isSearching = searchQuery.trim().length > 0;
+  const matchedGenres = isSearching
+    ? [...new Set(
+        movies
+          .filter((m) => m.title.toLowerCase().includes(searchQuery.toLowerCase()))
+          .map((m) => m.genre)
+      )]
+    : genres;
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div style={{ backgroundColor: "black", minHeight: "100vh" }}>
+      <Navbar
+        profile={profile}
+        onLogout={() => setProfile(null)}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+      />
+
+      <div style={{ paddingTop: "60px" }}>
+        {!isSearching && <Banner />}
+
+        {isSearching && matchedGenres.length === 0 && (
+          <p style={{ color: "#888", padding: "40px 24px", fontSize: "15px" }}>
+            No movies found for "{searchQuery}"
+          </p>
+        )}
+
+        {matchedGenres.map((g) => (
+          <Row
+            key={g}
+            title={isSearching ? g : `${g} Movies`}
+            genre={g}
+            searchQuery={searchQuery}
+          />
+        ))}
+      </div>
     </div>
   );
 }
